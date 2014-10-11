@@ -1,6 +1,6 @@
 /**
  * @ngdoc module
- * @name material.components.buttons
+ * @name material.components.button
  * @description
  *
  * Button
@@ -19,7 +19,7 @@ angular.module('material.components.button', [
 /**
  * @ngdoc directive
  * @name materialButton
- * @order 0
+ * @module material.components.button
  *
  * @restrict E
  *

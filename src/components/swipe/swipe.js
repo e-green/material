@@ -7,7 +7,7 @@
    */
   angular.module('material.components.swipe',['ng'])
 
-    /**
+    /*
      * @ngdoc service
      * @module material.components.swipe
      * @name $materialSwipe
@@ -106,7 +106,6 @@
      * @module material.components.swipe
      * @name materialSwipeLeft
      *
-     * @order 0
      * @restrict A
      *
      * @description
@@ -141,7 +140,6 @@
      * @module material.components.swipe
      * @name materialSwipeRight
      *
-     * @order 1
      * @restrict A
      *
      * @description

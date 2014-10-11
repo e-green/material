@@ -13,6 +13,8 @@ module.exports = {
   closureStart: '(function(){\n',
   closureEnd: '\n})();',
 
+  ngVersion: '1.3.0-rc.4',
+
   //TODO make better
   components: fs.readdirSync(__dirname + '/../src/components')
     .map(function(folder) {
@@ -102,8 +104,8 @@ module.exports = {
       'src/components/tooltip/tooltip.js',
       'src/components/whiteframe/whiteframe.js',
       'src/components/divider/divider.js',
-      'src/components/linearProgress/linearProgress.js',
-      'src/components/circularProgress/circularProgress.js',
+      'src/components/progressLinear/progressLinear.js',
+      'src/components/progressCircular/progressCircular.js',
 
       // Non-visual Components
       'src/components/swipe/swipe.js',

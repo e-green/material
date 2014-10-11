@@ -1,4 +1,4 @@
-/**
+/*
  * @ngdoc module
  * @name material.services.registry
  *
@@ -12,7 +12,7 @@ angular.module('material.services.registry', [
     materialComponentRegistry 
   ]);
 
-/**
+/*
  * @ngdoc service
  * @name $materialComponentRegistry
  * @module material.services.registry

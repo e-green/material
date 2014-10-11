@@ -57,28 +57,11 @@ gulp.task('changelog', function(done) {
   });
 });
 
-
-/**
- * Docs
- */
-gulp.task('docs', ['docs-scripts', 'docs-html2js', 'docs-css', 'docs-html', 'docs-app', 'docs-version'], function() {
-});
-
-gulp.task('docs-version', ['docs-app'], function(done) {
-  exec('git rev-parse HEAD', { env: process.env }, function(err, stdout) {
-    if(err) throw err;
-    var sha = stdout.trim();
-    var json = require(buildConfig.docsVersionFile);
-    json.sha = sha;
-    writeFile(buildConfig.docsVersionFile, JSON.stringify(json), 'utf8', done);
-  });
-});
-
-gulp.task('docs-scripts', ['demo-scripts'], function() {
-  return gulp.src(buildConfig.docsAssets.js)
-    .pipe(concat('docs.js'))
-    .pipe(gulpif(IS_RELEASE_BUILD, uglify())
-    .pipe(gulp.dest(buildConfig.docsDist)));
+gulp.task('docs', ['docs-js', 'docs-css'], function() {
+  var dgeni = new Dgeni([
+    require('./docs/site-gen')
+  ]);
+  return dgeni.generate();
 });
 
 gulp.task('docs-html2js', function() {
@@ -88,49 +71,36 @@ gulp.task('docs-html2js', function() {
       declareModule: false
     }))
     .pipe(concat('docs-templates.js'))
-    .pipe(gulp.dest(buildConfig.docsDist));
-});
-
-// demo-scripts: runs after scripts and docs-generate so both the docs-generated js
-// files and the source-generated material files are done
-gulp.task('demo-scripts', ['scripts', 'docs-generate'], function() {
-  return gulp.src(buildConfig.demoAssets.js)
-    .pipe(concat('demo.js'))
-    .pipe(gulpif(IS_RELEASE_BUILD, uglify()))
-    .pipe(gulp.dest(buildConfig.docsDist));
-});
-
-gulp.task('docs-css', ['demo-css'], function() {
-  return gulp.src(buildConfig.docsAssets.css)
-    .pipe(concat('docs.css'))
-    .pipe(gulpif(IS_RELEASE_BUILD, minifyCss()))
-    .pipe(gulp.dest(buildConfig.docsDist));
-});
-
-gulp.task('demo-css', ['sass'], function() {
-  return gulp.src(buildConfig.demoAssets.css)
-    .pipe(concat('demo.css'))
-    .pipe(gulpif(IS_RELEASE_BUILD, minifyCss()))
-    .pipe(gulp.dest(buildConfig.docsDist));
-});
-
-gulp.task('docs-html', function() {
-  return gulp.src('docs/app/**/*.html', { base: 'docs/app' })
-    .pipe(gulpif(IS_RELEASE_BUILD,
-        replace(/angular-material\.(js|css)/g, 'angular-material.min.$1')))
-    .pipe(gulp.dest(buildConfig.docsDist));
-});
-
-gulp.task('docs-generate', ['build'], function() {
-  var dgeni = new Dgeni([
-    require('./docs')
-  ]);
-  return dgeni.generate();
+    .pipe(gulp.dest('dist/docs/js'));
 });
 
 gulp.task('docs-app', function() {
-  return gulp.src(['docs/app/**/*', '!docs/app/**/*.html'], { base: 'docs/app' })
-    .pipe(gulp.dest(buildConfig.docsDist));
+  return gulp.src(['docs/app/**/*', '!docs/app/partials/**/*.html'])
+    .pipe(gulp.dest('dist/docs'));
+});
+
+gulp.task('docs-js', ['build', 'docs-app', 'docs-html2js'], function() {
+  return gulp.src([
+    'bower_components/angularytics/dist/angularytics.js',
+    'bower_components/hammerjs/hammer.js',
+    'dist/angular-material.js',
+    'dist/docs/js/**/*.js',
+    'dist/docs/generated/**/demo/*.js'
+  ])
+    .pipe(concat('docs.js'))
+    .pipe(gulpif(IS_RELEASE_BUILD, uglify()))
+    .pipe(gulp.dest('dist/docs'));
+});
+
+gulp.task('docs-css', ['docs-app'], function() {
+  return gulp.src([
+    'dist/angular-material.css',
+    'docs/app/css/highlightjs-github.css',
+    'docs/app/css/layout-demo.css',
+    'docs/app/css/style.css'
+  ])
+    .pipe(concat('docs.css'))
+    .pipe(gulp.dest('dist/docs'));
 });
 
 /**

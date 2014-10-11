@@ -1,4 +1,4 @@
-/**
+/*
  * @ngdoc module
  * @name material.services.compiler
  * @description compiler service
@@ -17,62 +17,63 @@ angular.module('material.services.compiler', [
 
 function materialCompilerService($q, $http, $injector, $compile, $controller, $templateCache) {
 
-  /**
+  /*
    * @ngdoc service
    * @name $materialCompiler
    * @module material.services.compiler
    * @description
    * The $materialCompiler service is an abstraction of angular's compiler, that allows the developer
    * to easily compile an element with a templateUrl, controller, and locals.
+   *
+   * @usage
+   * <hljs lang="js">
+   * $materialCompiler.compile({
+   *   templateUrl: 'modal.html',
+   *   controller: 'ModalCtrl',
+   *   locals: {
+   *     modal: myModalInstance;
+   *   }
+   * }).then(function(compileData) {
+   *   compileData.element; // modal.html's template in an element
+   *   compileData.link(myScope); //attach controller & scope to element
+   * });
+   * </hljs>
    */
 
-   /**
+   /*
     * @ngdoc method
     * @name $materialCompiler#compile
+    * @description A helper to compile an HTML template/templateUrl with a given controller,
+    * locals, and scope.
     * @param {object} options An options object, with the following properties:
     *
-    *    - `controller` `{(string=|function()=}` Controller fn that should be associated with
+    *    - `controller` - `{(string=|function()=}` Controller fn that should be associated with
     *      newly created scope or the name of a registered controller if passed as a string.
-    *    - `controllerAs` `{string=}` A controller alias name. If present the controller will be
+    *    - `controllerAs` - `{string=}` A controller alias name. If present the controller will be
     *      published to scope under the `controllerAs` name.
-    *    - `template` `{string=}` html template as a string.
-    *    - `templateUrl` `{string=}` a path to an html template.
-    *    - `transformTemplate` `{function=} a function which can be used to transform
-    *      the templateUrl or template provided after it is fetched.  It will be given one
-    *      parameter, the template, and should return a transformed template.
+    *    - `template` - `{string=}` An html template as a string.
+    *    - `templateUrl` - `{string=}` A path to an html template.
+    *    - `transformTemplate` - `{function(template)=}` A function which transforms the template after
+    *      it is loaded. It will be given the template string as a parameter, and should
+    *      return a a new string representing the transformed template.
     *    - `resolve` - `{Object.<string, function>=}` - An optional map of dependencies which should
     *      be injected into the controller. If any of these dependencies are promises, the compiler
-    *      will wait for them all to be resolved or one to be rejected before the controller is
-    *      instantiated.
-    *
-    *      - `key` `{string}`: a name of a dependency to be injected into the controller.
-    *      - `factory` - `{string|function}`: If `string` then it is an alias for a service.
+    *      will wait for them all to be resolved, or if one is rejected before the controller is
+    *      instantiated `compile()` will fail..
+    *      * `key` - `{string}`: a name of a dependency to be injected into the controller.
+    *      * `factory` - `{string|function}`: If `string` then it is an alias for a service.
     *        Otherwise if function, then it is injected and the return value is treated as the
     *        dependency. If the result is a promise, it is resolved before its value is 
     *        injected into the controller.
     *
-    * @returns {object=} promise A promsie which will be resolved with a `compileData` object,
-    * with the following properties:
+    * @returns {object=} promise A promise, which will be resolved with a `compileData` object.
+    * `compileData` has the following properties: 
     *
-    *   - `{element}` `element` an uncompiled angular element compiled using the provided template.
-    *   - `{function(scope)}`  `link` A link function, which, when called, will compile
-    *     the elmeent and instantiate options.controller.
-    *   - `{object}` `locals` The locals which will be passed into the controller once `link` is
+    *   - `element` - `{element}`: an uncompiled element matching the provided template.
+    *   - `link` - `{function(scope)}`: A link function, which, when called, will compile
+    *     the element and instantiate the provided controller (if given).
+    *   - `locals` - `{object}`: The locals which will be passed into the controller once `link` is
     *     called.
-    *
-    * @usage
-    * <hljs lang="js">
-    * $materialCompiler.compile({
-    *   templateUrl: 'modal.html',
-    *   controller: 'ModalCtrl',
-    *   locals: {
-    *     modal: myModalInstance;
-    *   }
-    * }).then(function(compileData) {
-    *   compileData.element; // modal.html's template in an element
-    *   compileData.link(myScope); //attach controller & scope to element
-    * });
-    * </hljs>
     */
   this.compile = function(options) {
     var templateUrl = options.templateUrl;
@@ -136,5 +137,6 @@ function materialCompilerService($q, $http, $injector, $compile, $controller, $t
         }
       };
     });
+
   };
 }

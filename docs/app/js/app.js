@@ -6,17 +6,18 @@ var DocsApp = angular.module('docsApp', ['ngMaterial', 'ngRoute', 'angularytics'
 function(COMPONENTS, $routeProvider) {
   $routeProvider
     .when('/', {
-      templateUrl: 'template/home.tmpl.html'
+      templateUrl: 'partials/home.tmpl.html'
     })
     .when('/layout/:tmpl', {
       templateUrl: function(params){
-        return 'template/layout-' + params.tmpl + '.tmpl.html';
+        return 'partials/layout-' + params.tmpl + '.tmpl.html';
       }
     });
 
   angular.forEach(COMPONENTS, function(component) {
 
     angular.forEach(component.docs, function(doc) {
+      doc.url = '/' + doc.url;
       $routeProvider.when(doc.url, {
         templateUrl: doc.outputPath,
         resolve: {
@@ -30,11 +31,9 @@ function(COMPONENTS, $routeProvider) {
   });
 
   $routeProvider.otherwise('/');
-
 }])
 
-.config(['AngularyticsProvider',
-function(AngularyticsProvider) {
+.config(['AngularyticsProvider', function(AngularyticsProvider) {
   AngularyticsProvider.setEventHandlers(['Console', 'GoogleUniversal']);
 }])
 
@@ -50,23 +49,30 @@ function(Angularytics, $rootScope) {
   '$location',
   '$rootScope',
 function(COMPONENTS, $location, $rootScope) {
-  var componentDocs = [];
-  var demoDocs = [];
+
+  var menuDocs = {};
   COMPONENTS.forEach(function(component) {
     component.docs.forEach(function(doc) {
-      if (doc.docType === 'readme') {
-        demoDocs.push(doc);
-      } else {
-        componentDocs.push(doc);
-      }
+      menuDocs[doc.type] = menuDocs[doc.type] || [];
+      menuDocs[doc.type].push(doc);
     });
-    demoDocs = demoDocs.sort(sortByHumanName);
-    componentDocs = componentDocs.sort(sortByHumanName);
   });
-  var sections = [{
+  angular.forEach(menuDocs, function(docs, docType) {
+    menuDocs[docType] = docs.sort(function(a, b) {
+      return a.name < b.name ? -1 : 1;
+    });
+  });
+  var menuDocsFinal = [];
+  Object.keys(menuDocs).sort(function(a, b) {
+    return a.name < b.name ? -1 : 1;
+  }).forEach(function(docType) {
+    menuDocsFinal = menuDocsFinal.concat(menuDocs[docType]);
+  });
+
+  var sections = [/* {
     name: 'Demos',
     pages: demoDocs
-  }, {
+    } */, {
     name: 'Layout',
     pages: [{
       name: 'Container Elements',
@@ -87,7 +93,7 @@ function(COMPONENTS, $location, $rootScope) {
     }]
   }, {
     name: 'API',
-    pages: componentDocs
+    pages: menuDocsFinal
   }];
   var self;
 
@@ -149,15 +155,11 @@ function(COMPONENTS, $location, $rootScope) {
   '$location',
 function($scope, COMPONENTS, $materialSidenav, $timeout, $materialDialog, menu, $location ) {
 
-  $scope.goToUrl = function(p) {
-    window.location = p;
-  };
-
   $scope.COMPONENTS = COMPONENTS;
 
   $scope.menu = menu;
 
-  $scope.mainContentArea = document.querySelector("[role='main']");
+  var mainContentArea = document.querySelector("[role='main']");
 
   $scope.toggleMenu = function() {
     $timeout(function() {
@@ -168,29 +170,12 @@ function($scope, COMPONENTS, $materialSidenav, $timeout, $materialDialog, menu, 
   $scope.openPage = function(section, page) {
     menu.selectPage(section, page);
     $scope.toggleMenu();
-    $scope.mainContentArea.focus();
+    mainContentArea.focus();
   };
 
   $scope.goHome = function($event) {
     menu.selectPage(null, null);
     $location.path( '/' );
-  };
-
-  $scope.viewSource = function(demo, $event) {
-    $materialDialog({
-      targetEvent: $event,
-      controller: 'ViewSourceCtrl',
-      locals: {
-        demo: demo
-      },
-      templateUrl: 'template/view-source.tmpl.html'
-    });
-  };
-
-  $scope.menuDocs = function(component) {
-    return component.docs.filter(function(doc) {
-      return doc.docType !== 'readme';
-    });
   };
 }])
 
@@ -244,7 +229,7 @@ function($scope, doc, component, $rootScope, $templateCache, $http, $q) {
   $rootScope.currentComponent = component;
   $rootScope.currentDoc = doc;
 
-  component.demos.forEach(function(demo) {
+  false && component.demos.forEach(function(demo) {
 
     var demoFiles = [demo.indexFile]
       .concat( (demo.files || []).sort(sortByJs) );
@@ -274,4 +259,16 @@ function($scope, doc, component, $rootScope, $templateCache, $http, $q) {
   }
 
 }])
+
+.filter('humanizeDoc', function() {
+  return function(doc) {
+    if (!doc || !doc.type) return doc;
+    if (doc.type === 'directive') {
+      return doc.name.replace(/([A-Z])/g, function($1) {
+        return '-'+$1.toLowerCase();
+      }); 
+    }
+    return doc.name;
+  };
+})
 ;
